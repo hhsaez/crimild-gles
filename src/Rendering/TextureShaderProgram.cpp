@@ -56,7 +56,7 @@ const char *texture_fs = { CRIMILD_TO_STRING(
      void main( void ) 
      {
          vec4 color = texture2D( colorMap, vec2(uv.s, uv.t ) );
-         if ( color.a <= 0.1 ) {
+         if ( color.a <= 0.5 ) {
              discard;
          }
          
