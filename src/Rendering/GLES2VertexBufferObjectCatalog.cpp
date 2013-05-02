@@ -63,7 +63,7 @@ void GLES2VertexBufferObjectCatalog::bind( ShaderProgram *program, VertexBufferO
     
     const VertexFormat &format = vbo->getVertexFormat();
     
-    ShaderLocation *positionLocation = program->getLocation( ShaderLocation::DefaultLocations::POSITION_ATTRIBUTE_NAME );
+    ShaderLocation *positionLocation = program->getPositionAttributeLocation();
     if ( positionLocation->isValid() ) {
         if ( format.hasPositions() ) {
             glEnableVertexAttribArray( positionLocation->getLocation() );
@@ -76,7 +76,7 @@ void GLES2VertexBufferObjectCatalog::bind( ShaderProgram *program, VertexBufferO
         }
     }
     
-    ShaderLocation *uvLocation = program->getLocation( ShaderLocation::DefaultLocations::TEXTURE_COORDS_ATTRIBUTE_NAME );
+    ShaderLocation *uvLocation = program->getTextureCoordAttributeLocation();
     if ( uvLocation->isValid() ) {
         if ( format.hasTextureCoords() ) {
             glEnableVertexAttribArray( uvLocation->getLocation() );
@@ -92,12 +92,12 @@ void GLES2VertexBufferObjectCatalog::bind( ShaderProgram *program, VertexBufferO
 
 void GLES2VertexBufferObjectCatalog::unbind( ShaderProgram *program, VertexBufferObject *vbo )
 {
-    ShaderLocation *positionLocation = program->getLocation( ShaderLocation::DefaultLocations::POSITION_ATTRIBUTE_NAME );
+    ShaderLocation *positionLocation = program->getPositionAttributeLocation();
     if ( positionLocation->isValid() ) {
         glDisableVertexAttribArray( positionLocation->getLocation() );
     }
     
-    ShaderLocation *uvLocation = program->getLocation( ShaderLocation::DefaultLocations::TEXTURE_COORDS_ATTRIBUTE_NAME );
+    ShaderLocation *uvLocation = program->getTextureCoordAttributeLocation();
     if ( uvLocation->isValid() ) {
         glDisableVertexAttribArray( uvLocation->getLocation() );
     }

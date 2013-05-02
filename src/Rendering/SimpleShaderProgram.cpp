@@ -30,36 +30,41 @@
 using namespace Crimild;
 
 const char *simple_vs = { CRIMILD_TO_STRING(
-    attribute vec3 position;
+    attribute vec3 aPosition;
     
-    uniform mat4 projMatrix;
-    uniform mat4 viewMatrix;
-    uniform mat4 modelMatrix;
+    uniform mat4 uPMatrix;
+    uniform mat4 uVMatrix;
+    uniform mat4 uMMatrix;
     
-    varying vec4 color;
+    varying vec4 vColor;
     
     void main( void )
     {
-        vec4 mp = modelMatrix * vec4(position, 1.0);
-        color = vec4(0.5 + 0.5 * mp.x, 0.5 + 0.5 * mp.y, 0.5 + 0.5 * mp.z, 1.0);
-        gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(position, 1.0); 
+        vec4 mp = uMMatrix * vec4(aPosition, 1.0);
+        vColor = vec4(0.5 + 0.5 * mp.x, 0.5 + 0.5 * mp.y, 0.5 + 0.5 * mp.z, 1.0);
+        gl_Position = uPMatrix * uVMatrix * mp;
     }
 )};
 
 const char *simple_fs = { CRIMILD_TO_STRING(
     precision highp float;
                                             
-    varying vec4 color;
+    varying vec4 vColor;
     
     void main( void ) 
     { 
-        gl_FragColor = color; 
+        gl_FragColor = vColor; 
     }
 )};
 
 SimpleShaderProgram::SimpleShaderProgram( void )
     : ShaderProgram( VertexShaderPtr( new VertexShader( simple_vs ) ), FragmentShaderPtr( new FragmentShader( simple_fs ) ) )
 { 
+	registerPositionAttributeLocation( "aPosition" );
+    
+	registerProjectionMatrixUniformLocation( "uPMatrix" );
+	registerViewMatrixUniformLocation( "uVMatrix" );
+	registerModelMatrixUniformLocation( "uMMatrix" );
 }
 
 SimpleShaderProgram::~SimpleShaderProgram( void )

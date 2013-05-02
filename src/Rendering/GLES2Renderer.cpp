@@ -90,19 +90,27 @@ void GLES2Renderer::clearBuffers( void )
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
-void GLES2Renderer::applyTransformations( ShaderProgram *program, GeometryNode *geometry, Camera *camera )
+void GLES2Renderer::enableMaterialProperties( ShaderProgram *program, Material *material )
 {
-	ShaderLocation *projMatrixLocation = program->getLocation( ShaderLocation::DefaultLocations::PROJECTION_MATRIX_UNIFORM_NAME );
+	ShaderLocation *materialDiffuseLocation = program->getMaterialDiffuseUniformLocation();
+	if ( materialDiffuseLocation && materialDiffuseLocation->isValid() ) {
+		glUniform4fv( materialDiffuseLocation->getLocation(), 1, static_cast< const float * >( material->getDiffuse() ) );
+	}
+}
+
+void GLES2Renderer::applyTransformations( ShaderProgram *program, Geometry *geometry, Camera *camera )
+{
+	ShaderLocation *projMatrixLocation = program->getProjectionMatrixUniformLocation();
 	if ( projMatrixLocation->isValid() ) {
 		glUniformMatrix4fv( projMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const float * >( camera->getProjectionMatrix() ) );
 	}
     
-	ShaderLocation *viewMatrixLocation = program->getLocation( ShaderLocation::DefaultLocations::VIEW_MATRIX_UNIFORM_NAME );
+	ShaderLocation *viewMatrixLocation = program->getViewMatrixUniformLocation();
 	if ( viewMatrixLocation->isValid() ) {
 		glUniformMatrix4fv( viewMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const GLfloat * >( camera->getViewMatrix() ) );
 	}
     
-	ShaderLocation *modelMatrixLocation = program->getLocation( ShaderLocation::DefaultLocations::MODEL_MATRIX_UNIFORM_NAME );
+	ShaderLocation *modelMatrixLocation = program->getModelMatrixUniformLocation();
 	if ( modelMatrixLocation->isValid() ) {
 		Matrix4f modelMatrix = geometry->getWorld().computeModelMatrix();
 		glUniformMatrix4fv( modelMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const GLfloat * >( modelMatrix ) );
@@ -150,18 +158,23 @@ void GLES2Renderer::drawPrimitive( ShaderProgram *program, Primitive *primitive 
 				   ( const GLvoid * ) base );
 }
 
-void GLES2Renderer::restoreTransformations( ShaderProgram *program, GeometryNode *geometry, Camera *camera )
+void GLES2Renderer::restoreTransformations( ShaderProgram *program, Geometry *geometry, Camera *camera )
 {
     
 }
 
-ShaderProgram *GLES2Renderer::getFallbackProgram( Material *material )
+void GLES2Renderer::disableMaterialProperties( ShaderProgram *program, Material *material )
+{
+    
+}
+
+ShaderProgram *GLES2Renderer::getFallbackProgram( Material *material, Primitive *primitive )
 {
 	if ( material->getColorMap() ) {
 		return _fallbackPrograms[ "texture" ].get();
 	}
     
-	return _fallbackPrograms[ "simple" ].get();
+	return Renderer::getFallbackProgram(material, primitive);
 }
 
 

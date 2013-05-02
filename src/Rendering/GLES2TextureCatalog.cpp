@@ -59,11 +59,18 @@ void GLES2TextureCatalog::bind( ShaderProgram *program, Texture *texture )
 {
 	Catalog< Texture >::bind( program, texture );
     
-	ShaderLocation *mapLocation = program->getLocation( texture->getName() );
-	if ( mapLocation && mapLocation->isValid() ) {
+	ShaderLocation *textureLocation = nullptr;
+	if ( texture->getName() == "ColorMap" ) {
+		textureLocation = program->getMaterialColorMapUniformLocation();
+	}
+	else {
+		textureLocation = program->getLocation( texture->getName() );
+	}
+    
+	if ( textureLocation && textureLocation->isValid() ) {
 		glActiveTexture( GL_TEXTURE0 + _boundTextureCount );
 		glBindTexture( GL_TEXTURE_2D, texture->getCatalogId() );
-		glUniform1i( mapLocation->getLocation(), _boundTextureCount );
+		glUniform1i( textureLocation->getLocation(), _boundTextureCount );
         
 		++_boundTextureCount;
 	}

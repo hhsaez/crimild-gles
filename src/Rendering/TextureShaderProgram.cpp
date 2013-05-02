@@ -30,32 +30,32 @@
 using namespace Crimild;
 
 const char *texture_vs = { CRIMILD_TO_STRING(
-     attribute vec3 position;
-     attribute vec2 textureCoords;
+     attribute vec3 aPosition;
+     attribute vec2 aTextureCoord;
      
-     uniform mat4 projMatrix;
-     uniform mat4 viewMatrix;
-     uniform mat4 modelMatrix;
+     uniform mat4 uPMatrix;
+     uniform mat4 uVMatrix;
+     uniform mat4 uMMatrix;
      
-     varying vec2 uv;
+     varying vec2 vTextureCoord;
      
      void main( void )
      {
-         uv = textureCoords;
-         gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(position, 1.0); 
+         vTextureCoord = aTextureCoord;
+         gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aPosition, 1.0); 
      }
  )};
 
 const char *texture_fs = { CRIMILD_TO_STRING(
      precision highp float;
                                              
-     uniform sampler2D colorMap;
+     uniform sampler2D uColorMap;
      
-     varying vec2 uv;
+     varying vec2 vTextureCoord;
      
      void main( void ) 
      {
-         vec4 color = texture2D( colorMap, vec2(uv.s, uv.t ) );
+         vec4 color = texture2D( uColorMap, vTextureCoord );
          if ( color.a <= 0.5 ) {
              discard;
          }
@@ -67,8 +67,14 @@ const char *texture_fs = { CRIMILD_TO_STRING(
 TextureShaderProgram::TextureShaderProgram( void )
     : ShaderProgram( VertexShaderPtr( new VertexShader( texture_vs ) ), FragmentShaderPtr( new FragmentShader( texture_fs ) ) )
 {
-    ShaderLocationPtr colorMapLocation( new ShaderLocation( ShaderLocation::Type::UNIFORM, "colorMap" ) );
-    registerLocation( colorMapLocation );
+	registerPositionAttributeLocation( "aPosition" );
+	registerTextureCoordAttributeLocation( "aTextureCoord" );
+    
+	registerProjectionMatrixUniformLocation( "uPMatrix" );
+	registerViewMatrixUniformLocation( "uVMatrix" );
+	registerModelMatrixUniformLocation( "uMMatrix" );
+    
+	registerMaterialColorMapUniformLocation( "uColorMap" );
 }
 
 TextureShaderProgram::~TextureShaderProgram( void )
