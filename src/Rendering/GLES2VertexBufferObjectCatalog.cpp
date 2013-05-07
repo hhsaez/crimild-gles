@@ -63,8 +63,8 @@ void GLES2VertexBufferObjectCatalog::bind( ShaderProgram *program, VertexBufferO
     
     const VertexFormat &format = vbo->getVertexFormat();
     
-    ShaderLocation *positionLocation = program->getPositionAttributeLocation();
-    if ( positionLocation->isValid() ) {
+    ShaderLocation *positionLocation = program->getStandardLocation( ShaderProgram::StandardLocation::POSITION_ATTRIBUTE );
+    if ( positionLocation && positionLocation->isValid() ) {
         if ( format.hasPositions() ) {
             glEnableVertexAttribArray( positionLocation->getLocation() );
             glVertexAttribPointer( positionLocation->getLocation(),
@@ -76,8 +76,34 @@ void GLES2VertexBufferObjectCatalog::bind( ShaderProgram *program, VertexBufferO
         }
     }
     
-    ShaderLocation *uvLocation = program->getTextureCoordAttributeLocation();
-    if ( uvLocation->isValid() ) {
+    ShaderLocation *normalLocation = program->getStandardLocation( ShaderProgram::StandardLocation::NORMAL_ATTRIBUTE );
+    if ( normalLocation && normalLocation->isValid() ) {
+        if ( format.hasPositions() ) {
+            glEnableVertexAttribArray( normalLocation->getLocation() );
+            glVertexAttribPointer( normalLocation->getLocation(),
+                                  format.getNormalComponents(),
+                                  GL_FLOAT,
+                                  GL_FALSE,
+                                  format.getVertexSizeInBytes(),
+                                  ( const GLvoid * )( baseOffset + format.getNormalsOffset() ) );
+        }
+    }
+    
+    ShaderLocation *colorLocation = program->getStandardLocation( ShaderProgram::StandardLocation::COLOR_ATTRIBUTE );
+    if ( colorLocation && colorLocation->isValid() ) {
+        if ( format.hasColors() ) {
+            glEnableVertexAttribArray( colorLocation->getLocation() );
+            glVertexAttribPointer( colorLocation->getLocation(),
+                                  format.getColorComponents(),
+                                  GL_FLOAT,
+                                  GL_FALSE,
+                                  format.getVertexSizeInBytes(),
+                                  ( const GLvoid * )( baseOffset + format.getColorsOffset() ) );
+        }
+    }
+    
+    ShaderLocation *uvLocation = program->getStandardLocation( ShaderProgram::StandardLocation::TEXTURE_COORD_ATTRIBUTE );
+    if ( uvLocation && uvLocation->isValid() ) {
         if ( format.hasTextureCoords() ) {
             glEnableVertexAttribArray( uvLocation->getLocation() );
             glVertexAttribPointer( uvLocation->getLocation(),
@@ -92,13 +118,23 @@ void GLES2VertexBufferObjectCatalog::bind( ShaderProgram *program, VertexBufferO
 
 void GLES2VertexBufferObjectCatalog::unbind( ShaderProgram *program, VertexBufferObject *vbo )
 {
-    ShaderLocation *positionLocation = program->getPositionAttributeLocation();
-    if ( positionLocation->isValid() ) {
+    ShaderLocation *positionLocation = program->getStandardLocation( ShaderProgram::StandardLocation::POSITION_ATTRIBUTE );
+    if ( positionLocation && positionLocation->isValid() ) {
         glDisableVertexAttribArray( positionLocation->getLocation() );
     }
     
-    ShaderLocation *uvLocation = program->getTextureCoordAttributeLocation();
-    if ( uvLocation->isValid() ) {
+    ShaderLocation *normalLocation = program->getStandardLocation( ShaderProgram::StandardLocation::NORMAL_ATTRIBUTE );
+    if ( normalLocation && normalLocation->isValid() ) {
+        glDisableVertexAttribArray( positionLocation->getLocation() );
+    }
+    
+    ShaderLocation *colorLocation = program->getStandardLocation( ShaderProgram::StandardLocation::COLOR_ATTRIBUTE );
+    if ( colorLocation && colorLocation->isValid() ) {
+        glDisableVertexAttribArray( positionLocation->getLocation() );
+    }
+    
+    ShaderLocation *uvLocation = program->getStandardLocation( ShaderProgram::StandardLocation::TEXTURE_COORD_ATTRIBUTE );
+    if ( uvLocation && uvLocation->isValid() ) {
         glDisableVertexAttribArray( uvLocation->getLocation() );
     }
     

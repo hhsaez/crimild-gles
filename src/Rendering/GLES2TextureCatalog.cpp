@@ -61,7 +61,7 @@ void GLES2TextureCatalog::bind( ShaderProgram *program, Texture *texture )
     
 	ShaderLocation *textureLocation = nullptr;
 	if ( texture->getName() == "ColorMap" ) {
-		textureLocation = program->getMaterialColorMapUniformLocation();
+		textureLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_COLOR_MAP_UNIFORM );
 	}
 	else {
 		textureLocation = program->getLocation( texture->getName() );

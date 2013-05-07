@@ -51,11 +51,6 @@ GLES2Renderer::GLES2Renderer( FrameBufferObjectPtr screenBuffer )
 	setIndexBufferObjectCatalog( IndexBufferObjectCatalogPtr( new GLES2IndexBufferObjectCatalog() ) );
 	setTextureCatalog( TextureCatalogPtr( new GLES2TextureCatalog() ) );
     
-	MaterialPtr material( new Material() );
-	ShaderProgramPtr program( new SimpleShaderProgram() );
-	material->setProgram( program );
-	setDefaultMaterial( material );
-    
 	_fallbackPrograms[ "simple" ] = ShaderProgramPtr( new SimpleShaderProgram() );
 	_fallbackPrograms[ "texture" ] = ShaderProgramPtr( new TextureShaderProgram() );
     
@@ -90,28 +85,48 @@ void GLES2Renderer::clearBuffers( void )
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
+void GLES2Renderer::enableLights( ShaderProgram *program, RenderStateComponent *renderState )
+{
+    
+}
+
 void GLES2Renderer::enableMaterialProperties( ShaderProgram *program, Material *material )
 {
-	ShaderLocation *materialDiffuseLocation = program->getMaterialDiffuseUniformLocation();
+	ShaderLocation *materialAmbientLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_AMBIENT_UNIFORM );
+	if ( materialAmbientLocation && materialAmbientLocation->isValid() ) {
+		glUniform4fv( materialAmbientLocation->getLocation(), 1, static_cast< const float * >( material->getAmbient() ) );
+	}
+    
+	ShaderLocation *materialDiffuseLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_DIFFUSE_UNIFORM );
 	if ( materialDiffuseLocation && materialDiffuseLocation->isValid() ) {
 		glUniform4fv( materialDiffuseLocation->getLocation(), 1, static_cast< const float * >( material->getDiffuse() ) );
+	}
+    
+	ShaderLocation *materialSpecularLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_SPECULAR_UNIFORM );
+	if ( materialSpecularLocation && materialSpecularLocation->isValid() ) {
+		glUniform4fv( materialSpecularLocation->getLocation(), 1, static_cast< const float * >( material->getSpecular() ) );
+	}
+    
+	ShaderLocation *materialShininessLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_SHININESS_UNIFORM );
+	if ( materialShininessLocation && materialShininessLocation->isValid() ) {
+		glUniform1f( materialShininessLocation->getLocation(), material->getShininess() );
 	}
 }
 
 void GLES2Renderer::applyTransformations( ShaderProgram *program, Geometry *geometry, Camera *camera )
 {
-	ShaderLocation *projMatrixLocation = program->getProjectionMatrixUniformLocation();
-	if ( projMatrixLocation->isValid() ) {
+	ShaderLocation *projMatrixLocation = program->getStandardLocation( ShaderProgram::StandardLocation::PROJECTION_MATRIX_UNIFORM );
+	if ( projMatrixLocation && projMatrixLocation->isValid() ) {
 		glUniformMatrix4fv( projMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const float * >( camera->getProjectionMatrix() ) );
 	}
     
-	ShaderLocation *viewMatrixLocation = program->getViewMatrixUniformLocation();
-	if ( viewMatrixLocation->isValid() ) {
+	ShaderLocation *viewMatrixLocation = program->getStandardLocation( ShaderProgram::StandardLocation::VIEW_MATRIX_UNIFORM );
+	if ( viewMatrixLocation && viewMatrixLocation->isValid() ) {
 		glUniformMatrix4fv( viewMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const GLfloat * >( camera->getViewMatrix() ) );
 	}
     
-	ShaderLocation *modelMatrixLocation = program->getModelMatrixUniformLocation();
-	if ( modelMatrixLocation->isValid() ) {
+	ShaderLocation *modelMatrixLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MODEL_MATRIX_UNIFORM );
+	if ( modelMatrixLocation && modelMatrixLocation->isValid() ) {
 		Matrix4f modelMatrix = geometry->getWorld().computeModelMatrix();
 		glUniformMatrix4fv( modelMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const GLfloat * >( modelMatrix ) );
 	}
@@ -168,13 +183,17 @@ void GLES2Renderer::disableMaterialProperties( ShaderProgram *program, Material 
     
 }
 
-ShaderProgram *GLES2Renderer::getFallbackProgram( Material *material, Primitive *primitive )
+void GLES2Renderer::disableLights( ShaderProgram *program, RenderStateComponent *renderState )
+{
+    
+}
+
+ShaderProgram *GLES2Renderer::getFallbackProgram( Material *material, Geometry *geometry, Primitive *primitive )
 {
 	if ( material->getColorMap() ) {
 		return _fallbackPrograms[ "texture" ].get();
 	}
     
-	return Renderer::getFallbackProgram(material, primitive);
+	return _fallbackPrograms[ "simple" ].get();
 }
-
 

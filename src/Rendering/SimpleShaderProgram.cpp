@@ -60,11 +60,11 @@ const char *simple_fs = { CRIMILD_TO_STRING(
 SimpleShaderProgram::SimpleShaderProgram( void )
     : ShaderProgram( VertexShaderPtr( new VertexShader( simple_vs ) ), FragmentShaderPtr( new FragmentShader( simple_fs ) ) )
 { 
-	registerPositionAttributeLocation( "aPosition" );
+	registerStandardLocation( ShaderLocation::Type::ATTRIBUTE, ShaderProgram::StandardLocation::POSITION_ATTRIBUTE, "aPosition" );
     
-	registerProjectionMatrixUniformLocation( "uPMatrix" );
-	registerViewMatrixUniformLocation( "uVMatrix" );
-	registerModelMatrixUniformLocation( "uMMatrix" );
+	registerStandardLocation( ShaderLocation::Type::UNIFORM, ShaderProgram::StandardLocation::PROJECTION_MATRIX_UNIFORM, "uPMatrix" );
+	registerStandardLocation( ShaderLocation::Type::UNIFORM, ShaderProgram::StandardLocation::VIEW_MATRIX_UNIFORM, "uVMatrix" );
+	registerStandardLocation( ShaderLocation::Type::UNIFORM, ShaderProgram::StandardLocation::MODEL_MATRIX_UNIFORM, "uMMatrix" );
 }
 
 SimpleShaderProgram::~SimpleShaderProgram( void )
