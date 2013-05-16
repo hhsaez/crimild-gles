@@ -95,17 +95,29 @@ void GLES2TextureCatalog::load( Texture *texture )
     glBindTexture( GL_TEXTURE_2D, textureId );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
                  texture->getImage()->getWidth(), texture->getImage()->getHeight(), 0,
-                 ( texture->getImage()->getBpp() == 3 ? GL_RGB : GL_RGBA ),
+                 ( texture->getImage()->getBpp() == 3 ? GL_RGB : ( texture->getImage()->getPixelFormat() == Image::PixelFormat::BGRA ? GL_BGRA : GL_RGBA ) ),
                  GL_UNSIGNED_BYTE,
                  ( GLvoid * ) texture->getImage()->getData() );
 }
 
 void GLES2TextureCatalog::unload( Texture *texture )
 {
-	glBindTexture( GL_TEXTURE_2D, 0 );
+    /*
+    unsigned int textureId = texture->getCacheInfo()->getResourceId();
+	glDeleteTextures( 1, &textureId );
+	--_cachedTextureCount;
+	texture->setCacheInfo( NULL );
+     */
+    
+    GLuint textureId = texture->getCatalogId();
+    glDeleteTextures( 1, &textureId );
     
 	Catalog< Texture >::unload( texture );
+    
+	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
