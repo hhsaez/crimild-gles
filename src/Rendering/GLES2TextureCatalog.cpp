@@ -106,13 +106,6 @@ void GLES2TextureCatalog::load( Texture *texture )
 
 void GLES2TextureCatalog::unload( Texture *texture )
 {
-    /*
-    unsigned int textureId = texture->getCacheInfo()->getResourceId();
-	glDeleteTextures( 1, &textureId );
-	--_cachedTextureCount;
-	texture->setCacheInfo( NULL );
-     */
-    
     GLuint textureId = texture->getCatalogId();
     glDeleteTextures( 1, &textureId );
     
