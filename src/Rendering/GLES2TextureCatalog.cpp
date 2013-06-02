@@ -55,36 +55,36 @@ int GLES2TextureCatalog::getNextResourceId( void )
     return textureId;
 }
 
-void GLES2TextureCatalog::bind( ShaderProgram *program, Texture *texture )
+void GLES2TextureCatalog::bind( ShaderLocation *location, Texture *texture )
 {
-	Catalog< Texture >::bind( program, texture );
-    
-	ShaderLocation *textureLocation = nullptr;
-	if ( texture->getName() == "ColorMap" ) {
-		textureLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_COLOR_MAP_UNIFORM );
-	}
-	else {
-		textureLocation = program->getLocation( texture->getName() );
+	if ( !texture ) {
+		return;
 	}
     
-	if ( textureLocation && textureLocation->isValid() ) {
+	Catalog< Texture >::bind( location, texture );
+    
+	if ( location && location->isValid() ) {
 		glActiveTexture( GL_TEXTURE0 + _boundTextureCount );
 		glBindTexture( GL_TEXTURE_2D, texture->getCatalogId() );
-		glUniform1i( textureLocation->getLocation(), _boundTextureCount );
+		glUniform1i( location->getLocation(), _boundTextureCount );
         
 		++_boundTextureCount;
 	}
 }
 
-void GLES2TextureCatalog::unbind( ShaderProgram *program, Texture *texture )
+void GLES2TextureCatalog::unbind( ShaderLocation *location, Texture *texture )
 {
+	if ( !texture ) {
+		return;
+	}
+    
 	if ( _boundTextureCount > 0 ) {
 		--_boundTextureCount;
 		glActiveTexture( GL_TEXTURE0 + _boundTextureCount );
 		glBindTexture( GL_TEXTURE_2D, _boundTextureCount );
 	}
 	
-	Catalog< Texture >::unbind( program, texture );
+	Catalog< Texture >::unbind( location, texture );
 }
 
 void GLES2TextureCatalog::load( Texture *texture )

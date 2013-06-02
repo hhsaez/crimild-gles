@@ -64,8 +64,20 @@ GLES2Renderer::~GLES2Renderer( void )
 
 void GLES2Renderer::configure( void )
 {
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    const char *OPENGL_VERSION = ( const char * ) glGetString( GL_VERSION );
+    const char *OPENGL_SHADING_LANGUAGE_VERSION = ( const char * ) glGetString( GL_SHADING_LANGUAGE_VERSION );
+    const char *OPENGL_VENDOR = ( const char * ) glGetString( GL_VENDOR );
+    const char *OPENGL_RENDERER = ( const char * ) glGetString( GL_RENDERER );
+    
+	Log::Info << "Configuring renderer"
+        << "\n       OpenGL version: " << ( OPENGL_VERSION ? OPENGL_VERSION : "<unknown>" )
+        << "\n       GLSL version: " << ( OPENGL_SHADING_LANGUAGE_VERSION ? OPENGL_SHADING_LANGUAGE_VERSION : "<unknown>" )
+        << "\n       Vendor: " << ( OPENGL_VENDOR ? OPENGL_VENDOR : "<unknown>" )
+        << "\n       Renderer: " << ( OPENGL_RENDERER ? OPENGL_RENDERER : "<unknown>" )
+        << Log::End;
+    
+    glEnable( GL_DEPTH_TEST );
+    glDepthFunc( GL_LESS );
 }
 
 void GLES2Renderer::beginRender( void )
@@ -85,50 +97,38 @@ void GLES2Renderer::clearBuffers( void )
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
-void GLES2Renderer::enableLights( ShaderProgram *program, RenderStateComponent *renderState )
+void GLES2Renderer::bindUniform( ShaderLocation *location, int value )
 {
-    
-}
-
-void GLES2Renderer::enableMaterialProperties( ShaderProgram *program, Material *material )
-{
-	ShaderLocation *materialAmbientLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_AMBIENT_UNIFORM );
-	if ( materialAmbientLocation && materialAmbientLocation->isValid() ) {
-		glUniform4fv( materialAmbientLocation->getLocation(), 1, static_cast< const float * >( material->getAmbient() ) );
-	}
-    
-	ShaderLocation *materialDiffuseLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_DIFFUSE_UNIFORM );
-	if ( materialDiffuseLocation && materialDiffuseLocation->isValid() ) {
-		glUniform4fv( materialDiffuseLocation->getLocation(), 1, static_cast< const float * >( material->getDiffuse() ) );
-	}
-    
-	ShaderLocation *materialSpecularLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_SPECULAR_UNIFORM );
-	if ( materialSpecularLocation && materialSpecularLocation->isValid() ) {
-		glUniform4fv( materialSpecularLocation->getLocation(), 1, static_cast< const float * >( material->getSpecular() ) );
-	}
-    
-	ShaderLocation *materialShininessLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MATERIAL_SHININESS_UNIFORM );
-	if ( materialShininessLocation && materialShininessLocation->isValid() ) {
-		glUniform1f( materialShininessLocation->getLocation(), material->getShininess() );
+	if ( location && location->isValid() ) {
+		glUniform1i( location->getLocation(), value );
 	}
 }
 
-void GLES2Renderer::applyTransformations( ShaderProgram *program, Geometry *geometry, Camera *camera )
+void GLES2Renderer::bindUniform( ShaderLocation *location, float value )
 {
-	ShaderLocation *projMatrixLocation = program->getStandardLocation( ShaderProgram::StandardLocation::PROJECTION_MATRIX_UNIFORM );
-	if ( projMatrixLocation && projMatrixLocation->isValid() ) {
-		glUniformMatrix4fv( projMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const float * >( camera->getProjectionMatrix() ) );
+	if ( location && location->isValid() ) {
+		glUniform1f( location->getLocation(), value );
 	}
-    
-	ShaderLocation *viewMatrixLocation = program->getStandardLocation( ShaderProgram::StandardLocation::VIEW_MATRIX_UNIFORM );
-	if ( viewMatrixLocation && viewMatrixLocation->isValid() ) {
-		glUniformMatrix4fv( viewMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const GLfloat * >( camera->getViewMatrix() ) );
+}
+
+void GLES2Renderer::bindUniform( ShaderLocation *location, const Vector3f &vector )
+{
+	if ( location && location->isValid() ) {
+		glUniform3fv( location->getLocation(), 1, static_cast< const GLfloat * >( vector.getData() ) );
 	}
-    
-	ShaderLocation *modelMatrixLocation = program->getStandardLocation( ShaderProgram::StandardLocation::MODEL_MATRIX_UNIFORM );
-	if ( modelMatrixLocation && modelMatrixLocation->isValid() ) {
-		Matrix4f modelMatrix = geometry->getWorld().computeModelMatrix();
-		glUniformMatrix4fv( modelMatrixLocation->getLocation(), 1, GL_FALSE, static_cast< const GLfloat * >( modelMatrix ) );
+}
+
+void GLES2Renderer::bindUniform( ShaderLocation *location, const RGBAColorf &color )
+{
+	if ( location && location->isValid() ) {
+		glUniform4fv( location->getLocation(), 1, static_cast< const GLfloat * >( color.getData() ) );
+	}
+}
+
+void GLES2Renderer::bindUniform( ShaderLocation *location, const Matrix4f &matrix )
+{
+	if ( location && location->isValid() ) {
+		glUniformMatrix4fv( location->getLocation(), 1, GL_FALSE, static_cast< const GLfloat * >( matrix.getData() ) );
 	}
 }
 
@@ -171,21 +171,6 @@ void GLES2Renderer::drawPrimitive( ShaderProgram *program, Primitive *primitive 
 				   primitive->getIndexBuffer()->getIndexCount(),
 				   GL_UNSIGNED_SHORT,
 				   ( const GLvoid * ) base );
-}
-
-void GLES2Renderer::restoreTransformations( ShaderProgram *program, Geometry *geometry, Camera *camera )
-{
-    
-}
-
-void GLES2Renderer::disableMaterialProperties( ShaderProgram *program, Material *material )
-{
-    
-}
-
-void GLES2Renderer::disableLights( ShaderProgram *program, RenderStateComponent *renderState )
-{
-    
 }
 
 ShaderProgram *GLES2Renderer::getFallbackProgram( Material *material, Geometry *geometry, Primitive *primitive )
